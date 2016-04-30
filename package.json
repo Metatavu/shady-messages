@@ -1,0 +1,12 @@
+{
+  "name": "shady-messages",
+  "description": "Shady Business server messages",
+  "version": "0.0.2",
+  "contributors": [ ],
+  "dependencies": {
+    "underscore": "1.8.3",
+    "redis": "2.6.0-1"
+  },
+  "main": "./lib",
+  "readmeFilename": "README.md"
+}
