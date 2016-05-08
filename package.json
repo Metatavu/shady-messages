@@ -1,7 +1,7 @@
 {
   "name": "shady-messages",
   "description": "Shady Business server messages",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "contributors": [ ],
   "dependencies": {
     "underscore": "1.8.3",
