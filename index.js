@@ -1,10 +1,10 @@
-(function() {
+(() => {
   'use strict';
 
-  var _ = require("underscore");
-  var redis = require("redis");
+  const _ = require("underscore");
+  const redis = require("redis");
     
-  var ShadyMessages = class {
+  const ShadyMessages = class {
     
     constructor() {
       this._listeners = {};
@@ -35,13 +35,14 @@
       });
     }
   
-  }
+  };
   
-  var instance = new ShadyMessages();
-  
-  module.exports = {
-    getInstance: function () {
-      return instance;
-    }
-  }
-}).call(this);
+  module.exports = function setup(options, imports, register) {
+    const instance = new ShadyMessages();
+    
+    register(null, {
+      shadyMessages: instance
+    });
+  };
+
+})();

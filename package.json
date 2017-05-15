@@ -1,12 +1,16 @@
 {
   "name": "shady-messages",
-  "description": "Shady Business server messages",
-  "version": "0.1.1",
-  "contributors": [ ],
+  "description": "Shady engine messages plugin",
+  "version": "0.2.0",
+  "provides": [
+    "shadyMessages"
+  ]
   "dependencies": {
     "underscore": "1.8.3",
     "redis": "2.6.0-1"
   },
-  "main": "./lib",
+  "main": "index.js",
+  "author": "Metatavu Oy",
+  "license": "AGPL-3.0",
   "readmeFilename": "README.md"
 }
