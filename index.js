@@ -41,7 +41,7 @@
     const instance = new ShadyMessages();
     
     register(null, {
-      shadyMessages: instance
+      "shady-messages": instance
     });
   };
 
