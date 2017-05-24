@@ -3,11 +3,13 @@
   "description": "Shady engine messages plugin",
   "version": "0.2.0",
   "dependencies": {
-    "underscore": "1.8.3",
-    "redis": "2.6.0-1"
+    "redis": "2.6.0-1",
+    "underscore": "1.8.3"
   },
   "plugin": {
-    "provides": ["shady-messages"]
+    "provides": [
+      "shady-messages"
+    ]
   },
   "main": "index.js",
   "author": "Metatavu Oy",
