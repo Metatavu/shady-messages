@@ -6,7 +6,8 @@
     
   const ShadyMessages = class {
     
-    constructor() {
+    constructor(logger) {
+      this._logger = logger;
       this._listeners = {};
       this._publisher = redis.createClient();
       this._subscriber = redis.createClient();
@@ -30,15 +31,19 @@
       var data = JSON.parse(message);
       var event = { name: channel };
     
-      _.each(this._listeners[channel]||[], function (listener) {
-        listener(event, data);
+      _.each(this._listeners[channel]||[], (listener) => {
+        try {
+          listener(event, data);
+        } catch (e) {
+          this._logger.error(e);
+        }
       });
     }
   
   };
   
   module.exports = function setup(options, imports, register) {
-    const instance = new ShadyMessages();
+    const instance = new ShadyMessages(imports['logger']);
     
     register(null, {
       "shady-messages": instance

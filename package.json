@@ -4,11 +4,15 @@
   "version": "0.2.0",
   "dependencies": {
     "redis": "2.6.0-1",
-    "underscore": "1.8.3"
+    "underscore": "1.8.3",
+    "architect-logger": "0.0.1"
   },
   "plugin": {
     "provides": [
       "shady-messages"
+    ],
+    "consumes": [
+      "logger"
     ]
   },
   "main": "index.js",
