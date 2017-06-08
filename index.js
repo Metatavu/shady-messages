@@ -1,52 +1,92 @@
 (() => {
   'use strict';
 
-  const _ = require("underscore");
-  const redis = require("redis");
-    
+  const _ = require("lodash");
+  const util = require('util');
+  const amqp = require('amqplib/callback_api');
+  
   const ShadyMessages = class {
     
-    constructor(logger) {
+    constructor(logger, channel) {
       this._logger = logger;
+      this._channel = channel;
+      this._exchange = 'shady-messages';
       this._listeners = {};
-      this._publisher = redis.createClient();
-      this._subscriber = redis.createClient();
-      this._subscriber.on("message", this._onMessage.bind(this));
     }
     
-    on (event, func) {
-      if (!this._listeners[event]) {
-        this._subscriber.subscribe(event);
-        this._listeners[event] = [func];
+    on (channelName, func) {
+      if (!this._listeners[channelName]) {
+        this._assertExchange();
+        this._channel.assertQueue('', { exclusive: true }, (err, ok) => {
+          if (err) {
+            this._logger.error(util.format('Error occurred while asserting queue: %s', err));
+          } else {
+            const queue = ok.queue;
+            
+            this._channel.bindQueue(queue, this._exchange, channelName);
+            this._listeners[channelName] = [func];
+            
+            this._channel.consume(queue, (message) => {
+              this._handleMessage(channelName, message.content.toString());
+            }, {noAck: true});
+          }
+        });
       } else {
-        this._listeners[event].push(func);
+        this._listeners[channelName].push(func);
       }
     }
     
-    trigger (event, data) {
-      this._publisher.publish(event, JSON.stringify(data||{}));
+    trigger (channelName, data) {
+      this._assertExchange();
+      const buffer = new Buffer(JSON.stringify(data||{}));
+      this._channel.publish(this._exchange, channelName, buffer);
     }
     
-    _onMessage (channel, message) {
-      var data = JSON.parse(message);
-      var event = { name: channel };
+    _assertExchange() {
+      this._channel.assertExchange(this._exchange, 'topic', {durable: false});
+    }
     
-      _.each(this._listeners[channel]||[], (listener) => {
-        try {
+    _handleMessage (channelName, message) {
+      try {
+        const data = JSON.parse(message);
+        const event = { name: channelName };
+
+        _.each(this._listeners[channelName]||[], (listener) => {
           listener(event, data);
-        } catch (e) {
-          this._logger.error(e);
-        }
-      });
+        });
+      } catch (e) {
+        this._logger.error(e);
+      }
     }
   
   };
   
   module.exports = function setup(options, imports, register) {
-    const instance = new ShadyMessages(imports['logger']);
+    const logger = imports['logger'];
+    const amqpUrl = options['amqpUrl'];
     
-    register(null, {
-      "shady-messages": instance
+    logger.info(util.format('Connecting to amqp server at %s', amqpUrl));
+    
+    amqp.connect(amqpUrl, (connectErr, connection) => {
+      if (connectErr) {
+        logger.error(util.format('Error occurred with connecting to amqp server: %s', connectErr));
+      } else {
+        logger.info('Connected to amqp server');
+        logger.info('Creating amqp channel for shady-messages');
+        connection.createChannel((channelErr, channel) => {
+          if (channelErr) {
+            logger.error(util.format('Error occurred while creating amqp channel: %s', channelErr));
+          } else {
+            logger.info('Amqp channel created for shady-messages');
+            
+            const instance = new ShadyMessages(logger, channel);
+
+            register(null, {
+              "shady-messages": instance
+            });
+          }
+        });
+      }
     });
   };
 
