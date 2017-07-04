@@ -1,7 +1,7 @@
 {
   "name": "shady-messages",
   "description": "Shady engine messages plugin",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "dependencies": {
     "amqplib": "0.5.1",
     "architect-logger": "0.0.1",
