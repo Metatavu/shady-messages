@@ -66,11 +66,23 @@
     const amqpUrl = options['amqpUrl'];
     
     logger.info(util.format('Connecting to amqp server at %s', amqpUrl));
-    
     amqp.connect(amqpUrl, (connectErr, connection) => {
       if (connectErr) {
         logger.error(util.format('Error occurred with connecting to amqp server: %s', connectErr));
+        process.exit(1);
       } else {
+        connection.on("error", (err) => {
+          if (err.message !== "Connection closing") {
+            logger.error(`AMQP Connection error ${err}`); 
+            process.exit(1);
+          }
+        });
+        
+        connection.on("close", () => {
+          logger.error(`AMQP Connection closed`); 
+          process.exit(1);
+        });
+        
         logger.info('Connected to amqp server');
         logger.info('Creating amqp channel for shady-messages');
         connection.createChannel((channelErr, channel) => {
